@@ -18,7 +18,7 @@ export function escapeHtml(value = "") {
 
 export function formatDate(value) {
   if (!value) return "—";
-  return new Intl.DateTimeFormat("ru-RU", {
+  return new Intl.DateTimeFormat("de-DE", {
     day: "2-digit",
     month: "short",
     hour: "2-digit",
@@ -43,16 +43,16 @@ export function renderShell({ title, nav, content }) {
   const root = qs("#app");
   root.innerHTML = `
     <header class="site-header">
-      <a class="brand" href="#/">AIRC Starter</a>
-      <nav class="nav" aria-label="Главная навигация">
+      <a class="brand" href="#/">inSkills Academy</a>
+      <nav class="nav" aria-label="Hauptnavigation">
         ${nav.map((item) => `<a href="${item.href}" ${item.active ? 'aria-current="page"' : ""}>${escapeHtml(item.label)}</a>`).join("")}
       </nav>
     </header>
     <main id="main">${content}</main>
     <div id="global-notice" class="notice" hidden role="status" aria-live="polite"></div>
     <footer class="site-footer">
-      <span>Собрано на AIRC Starter</span>
-      <a href="#/styleguide">Стиль проекта</a>
+      <span>inSkills Academy · Permanent Make-up Quiz</span>
+      <a href="#/styleguide">Design</a>
     </footer>
   `;
 }
@@ -69,28 +69,28 @@ export function onRouteChange(callback) {
 
 export function statusLabel(status) {
   return ({
-    new: "Новая",
-    in_progress: "В работе",
-    done: "Готово",
-    archived: "Архив",
-    contacted: "Связались",
-    proposal: "Предложение",
-    won: "Договорились",
-    lost: "Закрыто",
-    blocked: "Заблокировано",
+    new: "Neu",
+    in_progress: "In Bearbeitung",
+    done: "Fertig",
+    archived: "Archiviert",
+    contacted: "Kontaktiert",
+    proposal: "Angebot",
+    won: "Vereinbart",
+    lost: "Abgeschlossen",
+    blocked: "Blockiert",
   })[status] || status;
 }
 
 export function renderLogin() {
   return `
     <section class="panel narrow">
-      <p class="eyebrow">Внутренний экран</p>
-      <h1>Войди как владелец</h1>
-      <p class="lead">В локальном режиме вход не нужен. Эта форма появляется, когда включён Supabase.</p>
+      <p class="eyebrow">Interner Bereich</p>
+      <h1>Als Inhaber anmelden</h1>
+      <p class="lead">Im lokalen Modus ist keine Anmeldung nötig. Dieses Formular erscheint, wenn Supabase aktiviert ist.</p>
       <form id="login-form" class="stack">
-        <label>Почта<input name="email" type="email" autocomplete="username" required></label>
-        <label>Пароль<input name="password" type="password" autocomplete="current-password" required></label>
-        <button class="button" type="submit">Войти в рабочее пространство</button>
+        <label>E-Mail<input name="email" type="email" autocomplete="username" required></label>
+        <label>Passwort<input name="password" type="password" autocomplete="current-password" required></label>
+        <button class="button" type="submit">Im Arbeitsbereich anmelden</button>
         <p id="login-error" class="field-error" hidden></p>
       </form>
     </section>

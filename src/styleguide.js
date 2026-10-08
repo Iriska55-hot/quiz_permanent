@@ -2,54 +2,54 @@ import { renderShell } from "./ui.js";
 
 export function renderStyleguide(activePath = "/styleguide") {
   renderShell({
-    title: "Стиль проекта — AIRC Starter",
+    title: "Design – inSkills Academy",
     nav: [
-      { href: "#/", label: "Проект", active: false },
-      { href: "#/workspace", label: "Рабочий экран", active: false },
-      { href: "#/styleguide", label: "Стиль", active: true },
+      { href: "#/", label: "Startseite", active: false },
+      { href: "#/workspace", label: "Ergebnisse", active: false },
+      { href: "#/styleguide", label: "Design", active: true },
     ],
     content: `
       <section class="section">
         <div class="container">
           <p class="eyebrow">DESIGN_SYSTEM.md</p>
-          <h1 style="font-size:clamp(38px,6vw,64px)">Стиль проекта</h1>
-          <p class="lead">Эта страница помогает агенту видеть повторяемые правила, а тебе — ловить случайные цвета, размеры и компоненты.</p>
+          <h1 style="font-size:clamp(38px,6vw,64px)">Design des Projekts</h1>
+          <p class="lead">Hier sehen Sie die verwendeten Farben, Abstände und Elemente auf einen Blick.</p>
 
           <div class="style-row">
-            <strong>Цвета</strong>
+            <strong>Farben</strong>
             <div class="swatches">
-              <div class="swatch" style="background:#f7f5fb">Фон</div>
-              <div class="swatch" style="background:#ffffff">Карточка</div>
-              <div class="swatch" style="background:#201a2b;color:white">Текст</div>
-              <div class="swatch" style="background:#6d45d7;color:white">Акцент</div>
-              <div class="swatch" style="background:#a12b3b;color:white">Ошибка</div>
+              <div class="swatch" style="background:#0d0b09;color:#f8f4eb">Hintergrund</div>
+              <div class="swatch" style="background:#1b1712;color:#f8f4eb">Karte</div>
+              <div class="swatch" style="background:#f8f4eb;color:#0d0b09">Text</div>
+              <div class="swatch" style="background:#f3d47a;color:#0d0b09">Akzent</div>
+              <div class="swatch" style="background:#f0a8a0;color:#0d0b09">Fehler</div>
             </div>
           </div>
 
           <div class="style-row">
-            <strong>Кнопки</strong>
+            <strong>Schaltflächen</strong>
             <div class="inline">
-              <button class="button">Главное действие</button>
-              <button class="button button--secondary">Вторичное</button>
-              <button class="button button--danger">Опасное</button>
+              <button class="button">Hauptaktion</button>
+              <button class="button button--secondary">Weitere Aktion</button>
+              <button class="button button--danger">Kritische Aktion</button>
             </div>
           </div>
 
           <div class="style-row">
-            <strong>Поля</strong>
+            <strong>Felder</strong>
             <div class="stack" style="max-width:520px">
-              <label>Название поля<input value="Пример значения"></label>
-              <label>Комментарий<textarea>Короткий реальный текст помогает проверить высоту и переносы.</textarea></label>
-              <p class="field-error">Объясни, как исправить ошибку.</p>
+              <label>Feldname<input value="Beispielwert"></label>
+              <label>Kommentar<textarea>Ein kurzer Beispieltext zeigt Zeilenhöhe und Umbrüche.</textarea></label>
+              <p class="field-error">Bitte korrigieren Sie Ihre Eingabe.</p>
             </div>
           </div>
 
           <div class="style-row">
-            <strong>Карточка</strong>
+            <strong>Karte</strong>
             <article class="card" style="max-width:560px">
-              <span class="badge">В работе</span>
-              <h3 style="margin-top:14px">Один понятный смысл</h3>
-              <p class="muted">Карточка не должна конкурировать с главным действием экрана.</p>
+              <span class="badge">In Bearbeitung</span>
+              <h3 style="margin-top:14px">Eine klare Aussage</h3>
+              <p class="muted">Die Karte ergänzt die wichtigste Aktion auf der Seite.</p>
             </article>
           </div>
         </div>

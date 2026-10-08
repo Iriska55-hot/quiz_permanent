@@ -64,7 +64,7 @@ const localStore = {
   async update(id, patch) {
     const records = readLocal();
     const index = records.findIndex((record) => record.id === id);
-    if (index < 0) throw new Error("Запись не найдена");
+    if (index < 0) throw new Error("Eintrag nicht gefunden");
     records[index] = normalizeRecord({
       ...records[index],
       ...patch,
@@ -98,7 +98,7 @@ const localStore = {
 function supabaseConfig() {
   const cfg = runtime().supabase || {};
   if (!cfg.url || !cfg.publishableKey) {
-    throw new Error("Заполни supabase.url и supabase.publishableKey в runtime-config.js");
+    throw new Error("Bitte supabase.url und supabase.publishableKey in runtime-config.js eintragen");
   }
   return {
     url: cfg.url.replace(/\/$/, ""),
@@ -131,7 +131,7 @@ async function authRequest(path, body) {
     body: JSON.stringify(body),
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error_description || data.msg || "Не удалось войти");
+  if (!response.ok) throw new Error(data.error_description || data.msg || "Die Anmeldung ist fehlgeschlagen.");
   return data;
 }
 
@@ -154,7 +154,7 @@ async function ensureSession() {
 async function rest(path, { method = "GET", body, requireAuth = true, prefer } = {}) {
   const cfg = supabaseConfig();
   const session = requireAuth ? await ensureSession() : null;
-  if (requireAuth && !session?.access_token) throw new Error("Сначала войди во внутренний экран");
+  if (requireAuth && !session?.access_token) throw new Error("Bitte melden Sie sich zuerst im internen Bereich an.");
   const headers = {
     "content-type": "application/json",
     apikey: cfg.key,
@@ -169,7 +169,7 @@ async function rest(path, { method = "GET", body, requireAuth = true, prefer } =
   const text = await response.text();
   const data = text ? JSON.parse(text) : null;
   if (!response.ok) {
-    throw new Error(data?.message || data?.hint || `Ошибка базы: ${response.status}`);
+    throw new Error(data?.message || data?.hint || `Datenbankfehler: ${response.status}`);
   }
   return data;
 }
@@ -256,7 +256,7 @@ const supabaseStore = {
     return this.update(id, { archived_at: new Date().toISOString() });
   },
   async reset() {
-    throw new Error("Сброс демо-данных доступен только в локальном режиме");
+    throw new Error("Demo-Daten können nur im lokalen Modus zurückgesetzt werden.");
   },
 };
 

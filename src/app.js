@@ -17,10 +17,10 @@ const STATE_KEY = "airc_quiz_state_v1";
 const RESULT_KEY = "airc_quiz_result_v1";
 
 const nav = (active) => [
-  { href: "#/", label: "Главная", active: active === "/" },
-  { href: "#/quiz", label: "Квиз", active: active === "/quiz" },
-  { href: "#/workspace", label: "Результаты", active: active === "/workspace" },
-  { href: "#/styleguide", label: "Стиль", active: active === "/styleguide" },
+  { href: "#/", label: "Startseite", active: active === "/" },
+  { href: "#/quiz", label: "Quiz", active: active === "/quiz" },
+  { href: "#/workspace", label: "Ergebnisse", active: active === "/workspace" },
+  { href: "#/styleguide", label: "Design", active: active === "/styleguide" },
 ];
 
 function readState() {
@@ -64,8 +64,8 @@ function renderHome() {
           </div>
           <aside class="panel">
             <span class="metric">${quiz.questions.length}</span>
-            <h2 style="font-size:30px">коротких вопросов</h2>
-            <p class="muted">Результат рассчитывается по прозрачной таблице в <code>src/project.js</code>. Каждый результат достижим.</p>
+            <h2 style="font-size:30px">kurze Fragen</h2>
+            <p class="muted">Wählen Sie einen von drei Bereichen und beschreiben Sie Ihren Wunsch. Das Ergebnis dient als Gesprächsgrundlage für die Beratung.</p>
           </aside>
         </div>
       </section>
@@ -91,16 +91,16 @@ function renderQuiz() {
   const percent = Math.round((step / quiz.questions.length) * 100);
 
   renderShell({
-    title: `Вопрос ${step + 1} — ${quiz.name}`,
+    title: `Frage ${step + 1} – ${quiz.name}`,
     nav: nav("/quiz"),
     content: `
       <section class="section">
         <div class="narrow panel">
           <div class="split">
-            <p class="eyebrow">Вопрос ${step + 1} из ${quiz.questions.length}</p>
+            <p class="eyebrow">Frage ${step + 1} von ${quiz.questions.length}</p>
             <span class="small muted">${percent}%</span>
           </div>
-          <div class="progress" aria-label="Прогресс квиза"><span style="width:${percent}%"></span></div>
+          <div class="progress" aria-label="Fortschritt im Quiz"><span style="width:${percent}%"></span></div>
           <h1 style="font-size:clamp(32px,6vw,52px);margin-top:28px">${escapeHtml(question.title)}</h1>
           <form id="question-form" class="stack">
             ${question.options.map((option, index) => `
@@ -109,10 +109,10 @@ function renderQuiz() {
                 <span>${escapeHtml(option.label)}</span>
               </label>
             `).join("")}
-            <p id="question-error" class="field-error" hidden>Выбери один вариант.</p>
+            <p id="question-error" class="field-error" hidden>Bitte wählen Sie eine Antwort aus.</p>
             <div class="split">
-              ${step > 0 ? '<button id="back" class="button button--secondary" type="button">Назад</button>' : "<span></span>"}
-              <button class="button" type="submit">${step === quiz.questions.length - 1 ? "Показать результат" : "Следующий вопрос"}</button>
+              ${step > 0 ? '<button id="back" class="button button--secondary" type="button">Zurück</button>' : "<span></span>"}
+              <button class="button" type="submit">${step === quiz.questions.length - 1 ? "Ergebnis ansehen" : "Weiter"}</button>
             </div>
           </form>
         </div>
@@ -155,7 +155,7 @@ function renderQuiz() {
       writeState({ step: 0, answers: {} });
       location.hash = "#/result";
     } catch (cause) {
-      setNotice(cause instanceof Error ? cause.message : "Не удалось сохранить результат", "error");
+      setNotice(cause instanceof Error ? cause.message : "Das Ergebnis konnte nicht gespeichert werden.", "error");
     }
   });
 }
@@ -175,30 +175,30 @@ function renderResult() {
 
   const result = quiz.results[saved.resultKey];
   renderShell({
-    title: `Результат — ${quiz.name}`,
+    title: `Ergebnis – ${quiz.name}`,
     nav: nav(""),
     content: `
       <section class="section">
         <div class="narrow panel">
-          <p class="eyebrow">Твой результат</p>
+          <p class="eyebrow">Ihr Ergebnis</p>
           <h1 style="font-size:clamp(36px,7vw,60px)">${escapeHtml(result.title)}</h1>
           <p class="lead">${escapeHtml(result.text)}</p>
           <article class="card" style="margin-top:24px">
-            <span class="badge">Первое действие</span>
+            <span class="badge">So vereinbaren Sie einen Termin</span>
             <p style="font-size:20px"><strong>${escapeHtml(result.action)}</strong></p>
           </article>
 
           <form id="contact-form" class="stack" style="margin-top:28px">
             <label>
-              Получить продолжение по почте или в Telegram
-              <input name="contact" maxlength="120" placeholder="необязательно">
-              <span class="help">Польза уже показана. Контакт не блокирует результат.</span>
+              Demo-Kontaktfeld
+              <input name="contact" maxlength="120" placeholder="optional">
+              <span class="help">Die Eingabe wird nur in diesem Browser gespeichert. Bitte geben Sie keine echten Kontaktdaten ein: Sie werden nicht an die Fachkraft gesendet.</span>
             </label>
-            <button class="button" type="submit">Сохранить контакт</button>
+            <button class="button" type="submit">Demo-Kontakt speichern</button>
           </form>
 
           <div class="actions">
-            <button id="restart" class="button button--secondary">Пройти ещё раз</button>
+            <button id="restart" class="button button--secondary">Anderen Bereich wählen</button>
           </div>
         </div>
       </section>
@@ -215,7 +215,7 @@ function renderResult() {
     event.preventDefault();
     const contact = String(new FormData(event.currentTarget).get("contact") || "").trim();
     if (!contact) {
-      setNotice("Контакт можно не оставлять. Результат уже у тебя.");
+      setNotice("Sie können das Feld leer lassen. Ihr Ergebnis wird bereits angezeigt.");
       return;
     }
     try {
@@ -232,10 +232,10 @@ function renderResult() {
           resultTitle: saved.resultTitle,
         });
       }
-      setNotice("Контакт сохранён");
+      setNotice("Demo-Kontakt im Browser gespeichert");
       event.currentTarget.reset();
     } catch (cause) {
-      setNotice(cause instanceof Error ? cause.message : "Не удалось сохранить контакт", "error");
+      setNotice(cause instanceof Error ? cause.message : "Der Kontakt konnte nicht gespeichert werden.", "error");
     }
   });
 }
@@ -255,11 +255,11 @@ async function workspaceMarkup() {
       <div class="container">
         <div class="split">
           <div>
-            <p class="eyebrow">Рабочий экран</p>
-            <h1 style="font-size:clamp(38px,6vw,64px)">Прохождения</h1>
-            <p class="lead">${store.mode === "local" ? "Статистика этого браузера." : "Результаты рабочей области."}</p>
+            <p class="eyebrow">Interner Bereich</p>
+            <h1 style="font-size:clamp(38px,6vw,64px)">Quiz-Ergebnisse</h1>
+            <p class="lead">${store.mode === "local" ? "Ergebnisse in diesem Browser." : "Ergebnisse des Arbeitsbereichs."}</p>
           </div>
-          ${store.mode === "supabase" ? '<button id="logout" class="button button--secondary">Выйти</button>' : ""}
+          ${store.mode === "supabase" ? '<button id="logout" class="button button--secondary">Abmelden</button>' : ""}
         </div>
 
         <div class="grid grid-3" style="margin:30px 0">
@@ -274,11 +274,11 @@ async function workspaceMarkup() {
         <div class="record-list">
           ${records.length ? records.map((record) => `
             <article class="record">
-              <span class="badge">${escapeHtml(record.payload.resultTitle || "Результат")}</span>
-              <p><strong>${escapeHtml(record.payload.contact || "Контакт не оставлен")}</strong></p>
+              <span class="badge">${escapeHtml(record.payload.resultTitle || "Ergebnis")}</span>
+              <p><strong>${escapeHtml(record.payload.contact || "Kein Demo-Kontakt gespeichert")}</strong></p>
               <p class="record-meta">${formatDate(record.created_at)}</p>
             </article>
-          `).join("") : '<div class="empty"><h3>Прохождений пока нет</h3><p>Пройди квиз один раз и проверь все ветки.</p><a class="button" href="#/quiz">Открыть квиз</a></div>'}
+          `).join("") : '<div class="empty"><h3>Noch keine Ergebnisse</h3><p>Starten Sie das Quiz und sehen Sie sich die drei möglichen Ergebnisse an.</p><a class="button" href="#/quiz">Quiz öffnen</a></div>'}
         </div>
       </div>
     </section>
@@ -287,9 +287,9 @@ async function workspaceMarkup() {
 
 async function renderWorkspace() {
   renderShell({
-    title: `Результаты — ${quiz.name}`,
+    title: `Ergebnisse – ${quiz.name}`,
     nav: nav("/workspace"),
-    content: '<section class="section"><div class="container">Загружаю…</div></section>',
+    content: '<section class="section"><div class="container">Wird geladen …</div></section>',
   });
   qs("#main").innerHTML = await workspaceMarkup();
 
@@ -303,7 +303,7 @@ async function renderWorkspace() {
         await store.signIn(String(data.get("email")), String(data.get("password")));
         await renderWorkspace();
       } catch (cause) {
-        error.textContent = cause instanceof Error ? cause.message : "Не удалось войти";
+        error.textContent = cause instanceof Error ? cause.message : "Die Anmeldung ist fehlgeschlagen.";
         error.hidden = false;
       }
     });
@@ -328,6 +328,6 @@ async function render() {
 onRouteChange(() => {
   render().catch((error) => {
     console.error(error);
-    setNotice(error.message || "Ошибка приложения", "error");
+    setNotice(error.message || "Ein Fehler ist aufgetreten.", "error");
   });
 });

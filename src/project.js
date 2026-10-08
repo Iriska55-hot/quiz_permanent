@@ -16,11 +16,11 @@ export const quiz = {
     },
     {
       id: "frequency",
-      title: "Hatten Sie schon einmal Permanent Make-up?",
+      title: "Wie konkret ist Ihre Vorstellung?",
       options: [
-        { label: "Nein, das wäre mein erstes Mal", scores: {} },
-        { label: "Ja, ich möchte das Ergebnis auffrischen", scores: {} },
-        { label: "Ja, ich wünsche mir diesmal einen anderen Look", scores: {} },
+        { label: "Ich möchte erst einen Eindruck bekommen", scores: {} },
+        { label: "Ich habe bereits eine Vorstellung", scores: {} },
+        { label: "Ich möchte verschiedene Looks vergleichen", scores: {} },
       ],
     },
     {
@@ -38,7 +38,7 @@ export const quiz = {
       options: [
         { label: "Zeit beim Schminken sparen", scores: {} },
         { label: "Meine Gesichtszüge betonen", scores: {} },
-        { label: "Ein früheres Ergebnis korrigieren", scores: {} },
+        { label: "Vor der Beratung eine Vorstellung vom Ergebnis bekommen", scores: {} },
       ],
     },
     {
@@ -47,7 +47,7 @@ export const quiz = {
       options: [
         { label: "Die passende Form", scores: {} },
         { label: "Farbe und Intensität", scores: {} },
-        { label: "Ob sich altes Permanent Make-up auffrischen lässt", scores: {} },
+        { label: "Wie sich mein gewünschter Effekt umsetzen lässt", scores: {} },
       ],
     },
   ],

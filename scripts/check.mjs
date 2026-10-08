@@ -38,6 +38,12 @@ try {
   failures.push(`Хранилище: ${error.stderr?.toString() || error.message}`);
 }
 
+try {
+  execFileSync(process.execPath, ["--test", join(root, "scripts/try-on.test.mjs")], { stdio: "pipe" });
+} catch (error) {
+  failures.push(`Фото-примерка API: ${error.stderr?.toString() || error.message}`);
+}
+
 const secretPatterns = [
   /service[_-]?role\s*[:=]\s*["'][A-Za-z0-9._-]{20,}/i,
   /sb_secret_[A-Za-z0-9_-]{12,}/,
@@ -80,4 +86,5 @@ console.log("— синтаксис JavaScript");
 console.log("— обязательные файлы");
 console.log("— базовый поиск секретов");
 console.log("— локальный CRUD и публичная Supabase-вставка");
+console.log("— серверный маршрут фото-примерки");
 console.log("— запуск локального сайта\n");

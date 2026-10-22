@@ -38,7 +38,7 @@ export function setNotice(message, type = "success") {
   }, 4500);
 }
 
-export function renderShell({ title, nav, content }) {
+export function renderShell({ title, nav, content, footer = true }) {
   document.title = title;
   const root = qs("#app");
   root.innerHTML = `
@@ -50,10 +50,10 @@ export function renderShell({ title, nav, content }) {
     </header>
     <main id="main">${content}</main>
     <div id="global-notice" class="notice" hidden role="status" aria-live="polite"></div>
-    <footer class="site-footer">
+    ${footer ? `<footer class="site-footer">
       <span>inSkills Academy · Permanent Make-up Quiz</span>
       <a href="#/styleguide">Design</a>
-    </footer>
+    </footer>` : ""}
   `;
 }
 

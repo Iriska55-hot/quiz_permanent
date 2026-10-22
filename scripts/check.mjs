@@ -11,6 +11,7 @@ async function walk(dir) {
   const files = [];
   for (const item of items) {
     if (["dist", ".git", "node_modules"].includes(item.name)) continue;
+    if (item.isFile() && (item.name === ".env" || item.name.startsWith(".env.") && item.name !== ".env.example")) continue;
     const full = join(dir, item.name);
     if (item.isDirectory()) files.push(...await walk(full));
     else files.push(full);
@@ -39,7 +40,7 @@ try {
 }
 
 try {
-  execFileSync(process.execPath, ["--test", join(root, "scripts/try-on.test.mjs")], { stdio: "pipe" });
+  execFileSync(process.execPath, ["--test", ...['quiz-questions.test.mjs', 'try-on.test.mjs', 'try-on-client.test.mjs', 'dev.test.mjs', 'photo-validation.test.mjs', 'result-flow.test.mjs'].map(name => join(root, 'scripts', name))], { stdio: "pipe" });
 } catch (error) {
   failures.push(`Фото-примерка API: ${error.stderr?.toString() || error.message}`);
 }

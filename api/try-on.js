@@ -4,17 +4,14 @@ const allowedOrigins = new Set([
   "http://localhost:4173",
 ]);
 
-const zones = {
-  brows: "eyebrows: add realistic permanent makeup to the eyebrows only",
-  lips: "lips: add realistic permanent makeup to the lips only",
-  eyeliner: "eyes: add subtle permanent eyeliner to the upper lash lines only",
+const zones = new Set(["brows", "lips", "eyeliner"]);
+const effects = { natural: 25, balanced: 45, expressive: 65 };
+const colors = {
+  brows: { light: "#80634E", medium: "#604735", dark: "#3C2B25" },
+  lips: { light: "#B8787C", medium: "#A85561", dark: "#854454" },
+  eyeliner: { light: "#5A4034", medium: "#3D3D43", dark: "#202025" },
 };
-
-const effects = {
-  natural: "very natural and soft",
-  balanced: "visible but restrained",
-  expressive: "more expressive while still realistic",
-};
+const providerBase = "https://yce-api-01.makeupar.com/s2s/v2.0";
 
 const maxPhotoBytes = 3 * 1024 * 1024;
 const maxResultBytes = 4 * 1024 * 1024;
@@ -37,10 +34,36 @@ function errorResponse(message, status, origin) {
 function isImage(bytes, type) {
   if (type === "image/jpeg") return bytes.length >= 4 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
   if (type === "image/png") return bytes.length >= 8 && bytes.slice(0, 8).every((value, index) => value === [137, 80, 78, 71, 13, 10, 26, 10][index]);
-  if (type === "image/webp") {
-    return bytes.length >= 12 && Buffer.from(bytes.slice(0, 4)).toString() === "RIFF" && Buffer.from(bytes.slice(8, 12)).toString() === "WEBP";
-  }
+  if (type === 'image/webp') return bytes.length >= 12 && String.fromCharCode(...bytes.slice(0, 4)) === 'RIFF' && String.fromCharCode(...bytes.slice(8, 12)) === 'WEBP';
   return false;
+}
+
+function makeupEffect(zone, intensity, shade) {
+  const color = colors[zone][shade];
+  if (zone === "brows") return { category: "eyebrows", pattern: { type: "color" }, palettes: [{ color, colorIntensity: intensity, texture: "matte" }] };
+  if (zone === "lips") return { category: "lip_color", shape: { name: "original" }, style: { type: "full" }, morphology: { fullness: 0, wrinkless: 0 }, palettes: [{ color, texture: "matte", colorIntensity: intensity }] };
+  return { category: "eye_liner", pattern: { name: "Arabic3" }, palettes: [{ color, texture: "matte", colorIntensity: intensity }] };
+}
+
+async function providerJson(url, options) {
+  const response = await fetch(url, { ...options, signal: AbortSignal.timeout(20_000) });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok || body.status !== 200 || !body.data) {
+    const error = new Error('Provider request failed');
+    error.providerCode = typeof body.error_code === 'string' ? body.error_code.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 80) : `HTTP${response.status}`;
+    throw error;
+  }
+  return body.data;
+}
+
+function trustedFileUrl(value) {
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:" || !url.hostname.endsWith(".amazonaws.com")) throw new Error("Untrusted file URL");
+    return url.href;
+  } catch {
+    throw new Error("Untrusted file URL");
+  }
 }
 
 export async function OPTIONS(request) {
@@ -67,8 +90,9 @@ export async function POST(request) {
 
   const zone = form.get("zone");
   const effect = form.get("effect");
-  if (!Object.hasOwn(zones, zone) || !Object.hasOwn(effects, effect)) {
-    return errorResponse("Bitte wählen Sie einen gültigen Bereich und Effekt.", 400, origin);
+  const shade = form.get("shade");
+  if (!zones.has(zone) || !Object.hasOwn(effects, effect) || !Object.hasOwn(colors[zone] || {}, shade)) {
+    return errorResponse("Bitte wählen Sie einen gültigen Bereich, Effekt und Farbton.", 400, origin);
   }
 
   const photo = form.get("photo");
@@ -77,47 +101,53 @@ export async function POST(request) {
   }
 
   const imageBytes = new Uint8Array(await photo.arrayBuffer());
-  if (!isImage(imageBytes, photo.type)) return errorResponse("Bitte wählen Sie ein JPG-, PNG- oder WebP-Foto.", 400, origin);
+  if (!isImage(imageBytes, photo.type)) return errorResponse("Bitte wählen Sie ein JPG- oder PNG-Foto.", 400, origin);
 
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.PERFECTCORP_API_KEY;
   if (!apiKey) return errorResponse("Die Foto-Verarbeitung ist noch nicht eingerichtet.", 503, origin);
-
-  const providerForm = new FormData();
-  providerForm.set("model", "gpt-image-1.5");
-  providerForm.set("image", new File([imageBytes], "portrait", { type: photo.type }));
-  providerForm.set("prompt", `Edit this exact portrait. ${zones[zone]}. Desired effect: ${effects[effect]}. Preserve the person's identity, facial geometry, skin texture, expression, hair, clothing, lighting and background. Do not change any other facial area. Create a plausible cosmetic visualization, not a guarantee of a procedure result.`);
-  providerForm.set("input_fidelity", "high");
-  providerForm.set("output_format", "jpeg");
-  providerForm.set("output_compression", "75");
-  providerForm.set("quality", "medium");
-  providerForm.set("size", "1024x1024");
-
-  let providerResponse;
+  const authorization = { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" };
+  let stage = 'upload-target';
   try {
-    providerResponse = await fetch("https://api.openai.com/v1/images/edits", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}` },
-      body: providerForm,
-      signal: AbortSignal.timeout(120_000),
+    const file = (await providerJson(`${providerBase}/file`, {
+      method: "POST", headers: authorization,
+      body: JSON.stringify({ files: [{ content_type: photo.type, file_name: photo.type === "image/png" ? "portrait.png" : "portrait.jpg", file_size: photo.size }] }),
+    })).files?.[0];
+    if (!file?.file_id || !file.requests?.[0]) throw new Error("Missing upload target");
+    const upload = file.requests[0];
+    stage = 'upload';
+    if (upload.method !== "PUT") throw new Error("Unsupported upload method");
+    const uploadResponse = await fetch(trustedFileUrl(upload.url), {
+      method: "PUT", headers: upload.headers, body: imageBytes,
+      signal: AbortSignal.timeout(20_000),
     });
-  } catch {
-    return errorResponse("Die Foto-Verarbeitung ist vorübergehend nicht erreichbar.", 502, origin);
+    if (!uploadResponse.ok) throw new Error("Upload failed");
+
+    stage = 'create-task';
+    const task = await providerJson(`${providerBase}/task/makeup-vto`, {
+      method: "POST", headers: authorization,
+      body: JSON.stringify({ src_file_id: file.file_id, version: "1.0", effects: [makeupEffect(zone, effects[effect], shade)] }),
+    });
+    if (!task.task_id) throw new Error("Missing task ID");
+    stage = 'poll-task';
+    for (let attempt = 0; attempt < 30; attempt++) {
+      if (attempt) await new Promise((resolve) => setTimeout(resolve, 2_000));
+      const status = await providerJson(`${providerBase}/task/makeup-vto/${encodeURIComponent(task.task_id)}`, {
+        method: "GET", headers: { Authorization: authorization.Authorization },
+      });
+      if (status.task_status === "error") throw new Error("Processing failed");
+      if (status.task_status !== "success") continue;
+      stage = 'download-result';
+      const resultUrl = trustedFileUrl(status.results?.url || status.results?.[0]?.download_url);
+      const result = await fetch(resultUrl, { signal: AbortSignal.timeout(20_000) });
+      if (!result.ok || Number(result.headers.get("content-length")) > maxResultBytes) throw new Error("Result download failed");
+      const output = new Uint8Array(await result.arrayBuffer());
+      const type = ['image/jpeg', 'image/png', 'image/webp'].find(type => isImage(output, type));
+      if (!output.length || output.length > maxResultBytes || !type) throw new Error("Invalid result image");
+      return new Response(output, { status: 200, headers: { ...headers(origin), "content-type": type } });
+    }
+    throw new Error("Processing timed out");
+  } catch (error) {
+    console.error('Try-on failed:', stage, error.providerCode || error.message);
+    return errorResponse("Der Beispiel-Look konnte nicht erstellt werden. Bitte versuchen Sie es erneut.", 502, origin);
   }
-
-  if (!providerResponse.ok) return errorResponse("Der Beispiel-Look konnte nicht erstellt werden.", 502, origin);
-
-  let encoded;
-  try {
-    encoded = (await providerResponse.json()).data?.[0]?.b64_json;
-  } catch {
-    return errorResponse("Die Antwort der Foto-Verarbeitung ist ungültig.", 502, origin);
-  }
-  if (typeof encoded !== "string") return errorResponse("Die Antwort der Foto-Verarbeitung ist ungültig.", 502, origin);
-
-  const output = Buffer.from(encoded, "base64");
-  if (!output.length || output.length > maxResultBytes || !isImage(output, "image/jpeg")) {
-    return errorResponse("Das Ergebnis konnte nicht angezeigt werden.", 502, origin);
-  }
-
-  return new Response(output, { status: 200, headers: { ...headers(origin), "content-type": "image/jpeg" } });
 }

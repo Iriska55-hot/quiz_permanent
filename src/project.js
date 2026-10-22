@@ -1,8 +1,8 @@
 export const quiz = {
   name: "inSkills Academy",
   eyebrow: "Permanent Make-up Quiz",
-  title: "Welcher Bereich interessiert Sie?",
-  lead: "Wählen Sie Augenbrauen, Lippen oder Lidstriche und beantworten Sie fünf kurze Fragen. So können Sie Ihre Wünsche für das Gespräch mit der Fachkraft besser beschreiben.",
+  title: "Wie könnte Permanent Make-up an Ihnen aussehen?",
+  lead: "Beantworten Sie drei kurze Fragen zu Ihrem gewünschten Look. Danach wählen Sie ein eigenes Foto aus und sehen eine persönliche Vorschau für Augenbrauen, Lippen oder Lidstriche.",
   startCta: "Quiz starten",
   questions: [
     {
@@ -15,17 +15,8 @@ export const quiz = {
       ],
     },
     {
-      id: "frequency",
-      title: "Wie konkret ist Ihre Vorstellung?",
-      options: [
-        { label: "Ich möchte erst einen Eindruck bekommen", scores: {} },
-        { label: "Ich habe bereits eine Vorstellung", scores: {} },
-        { label: "Ich möchte verschiedene Looks vergleichen", scores: {} },
-      ],
-    },
-    {
       id: "input",
-      title: "Welcher Look gefällt Ihnen am besten?",
+      title: "Wie sichtbar soll der Look sein?",
       options: [
         { label: "Möglichst natürlich", scores: {} },
         { label: "Sichtbar, aber dezent", scores: {} },
@@ -33,21 +24,12 @@ export const quiz = {
       ],
     },
     {
-      id: "risk",
-      title: "Was ist Ihnen besonders wichtig?",
-      options: [
-        { label: "Zeit beim Schminken sparen", scores: {} },
-        { label: "Meine Gesichtszüge betonen", scores: {} },
-        { label: "Vor der Beratung eine Vorstellung vom Ergebnis bekommen", scores: {} },
-      ],
-    },
-    {
-      id: "goal",
-      title: "Was möchten Sie bei der Beratung besprechen?",
-      options: [
-        { label: "Die passende Form", scores: {} },
-        { label: "Farbe und Intensität", scores: {} },
-        { label: "Wie sich mein gewünschter Effekt umsetzen lässt", scores: {} },
+      id: "shade",
+      title: "Welcher Farbton gefällt Ihnen für die Vorschau?",
+      optionsByZone: [
+        ["Hellbraun", "Mittelbraun", "Dunkelbraun"],
+        ["Nude-Rosé", "Rosé", "Beerenton"],
+        ["Braun", "Anthrazit", "Schwarz"],
       ],
     },
   ],
@@ -69,3 +51,8 @@ export const quiz = {
     },
   },
 };
+
+export function questionOptions(question, answers) {
+  if (question.options) return question.options;
+  return (question.optionsByZone?.[answers.bottleneck] || []).map((label) => ({ label, scores: {} }));
+}
